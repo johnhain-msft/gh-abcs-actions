@@ -1,0 +1,8 @@
+{
+  "_comment": "JSCPD configuration for Super Linter. Threshold raised to 10% because this is an educational repository where lab workflows intentionally share similar patterns to reinforce learning. In a production setting, a lower threshold (1-5%) would be appropriate.",
+  "threshold": 10,
+  "ignore": [
+    "**/node_modules/**",
+    "**/.git/**"
+  ]
+}
