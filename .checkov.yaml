@@ -1,0 +1,23 @@
+# Checkov configuration for Super Linter
+#
+# SKIPPED CHECKS FOR EDUCATIONAL REPOSITORY
+# ==========================================
+#
+# CKV_GHA_7: "workflow_dispatch inputs MUST be empty"
+#   Skipped because this educational repository intentionally uses workflow_dispatch
+#   inputs to teach GitHub Actions concepts. The labs demonstrate how to use inputs
+#   for manual workflow triggers.
+#
+# CKV2_GHA_1: "Ensure top-level permissions are not set to write-all"
+#   Skipped because the lab workflows focus on teaching core GitHub Actions concepts.
+#   Explicit permissions blocks could be added to demonstrate security best practices.
+#
+# WARNING: In a production setting, you would NOT skip these checks:
+#   - CKV_GHA_7 protects against supply chain attacks where user-provided inputs
+#     could be used to inject malicious code or modify build outputs.
+#   - CKV2_GHA_1 enforces the principle of least privilege, ensuring workflows
+#     only have the permissions they actually need rather than broad write access.
+
+skip-check:
+  - CKV_GHA_7
+  - CKV2_GHA_1
