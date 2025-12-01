@@ -30,16 +30,20 @@ References:
       - name: Upload output file
         uses: actions/upload-artifact@v4
         with:
-          name: output-log-file
+          name: output-log-file-${{ matrix.os }}-node${{ matrix.node-version }}
           path: output.log
 ```
-4. In the `deploy-test` job, after the `checkout` action, copyt the following YAML content to use the `download-artifact` action
+> **Note:** The artifact name includes the matrix variables (`matrix.os` and `matrix.node-version`) to ensure each matrix job uploads a uniquely named artifact. Without this, multiple jobs would try to upload artifacts with the same name, causing conflicts.
+
+4. In the `deploy-test` job, after the `checkout` action, copy the following YAML content to use the `download-artifact` action
 ```YAML
-      - name: Download a single artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: output-log-file
+          pattern: output-log-file-*
+          merge-multiple: true
 ```
+> **Note:** Since each matrix job uploads a differently named artifact, we use `pattern` to match all artifacts starting with `output-log-file-` and `merge-multiple: true` to combine them into a single directory.
 5. Commit the changes into a new `feature/lab07` branch
 6. Open a new pull request from `Pull requests`
 > Make sure it is your repository pull request to not propose changes to the upstream repository. From the drop-down list choose the base repository to be yours.
@@ -122,7 +126,7 @@ jobs:
       - name: Upload output file
         uses: actions/upload-artifact@v4
         with:
-          name: output-log-file
+          name: output-log-file-${{ matrix.os }}-node${{ matrix.node-version }}
           path: output.log
 
   # If both linting and CI succeeds we want to deploy the code to a test environment
@@ -138,10 +142,11 @@ jobs:
         uses: actions/checkout@v4
 
       # Add here the download-artifact step
-      - name: Download a single artifact
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          name: output-log-file
+          pattern: output-log-file-*
+          merge-multiple: true
 
       # Placeholder - this step would be some action or run commands that deploys the code
       - name: Deploy to test env
