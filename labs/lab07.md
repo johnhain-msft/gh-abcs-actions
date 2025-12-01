@@ -19,7 +19,7 @@ References:
       fail-fast: true
       matrix:
         # our matrix for testing across node versions and OSs
-        node-version: [12, 14, 16]
+        node-version: [18, 20, 22]
         os: [macos-latest, windows-latest, ubuntu-latest]
 ```
 3. In the `ci` job, before the `deploy-test` job, copy the following YAML content to use the `upload-artifact` action:
@@ -96,7 +96,7 @@ jobs:
       fail-fast: true
       matrix:
         # our matrix for testing across node versions and OSs
-        node-version: [12, 14, 16]
+        node-version: [18, 20, 22]
         os: [macos-latest, windows-latest, ubuntu-latest]
     
     steps:
@@ -165,7 +165,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: '14.x'                # set this to the node version to use
+  NODE_VERSION: '20.x'                # set this to the node version to use
 
 # We only want to allow one deploy-to-prod workflow running at any point in time
 concurrency: 

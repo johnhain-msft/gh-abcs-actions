@@ -3,3 +3,4 @@ node_modules/*
 .bmad-core/*
 .bmad-infrastructure-devops/*
 web-bundles/*
+docs/*
