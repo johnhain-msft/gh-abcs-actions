@@ -1,0 +1,23 @@
+name: 08-1. AI Inference
+
+on:
+  workflow_dispatch:
+
+permissions:
+  models: read
+
+jobs:
+  inference:
+    name: AI Inference
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run AI Inference
+        id: ai
+        uses: actions/ai-inference@v1
+        with:
+          prompt: "Explain what GitHub Actions is in 2 sentences."
+          max-tokens: 150
+
+      - name: Display Response
+        run: echo "${{ steps.ai.outputs.response }}"
+        
