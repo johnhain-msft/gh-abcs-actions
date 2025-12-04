@@ -16,4 +16,6 @@ jobs:
     name: AI Inference
     runs-on: ubuntu-latest
     steps:
-      # Add AI inference steps here
+      # TODO: Add AI inference steps here
+      - name: Placeholder
+        run: echo "Add AI inference steps"
