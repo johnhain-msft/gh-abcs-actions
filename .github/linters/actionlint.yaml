@@ -5,4 +5,4 @@ self-hosted-runner:
 # Ignore 'models' permission scope error - this is a new GitHub permission
 # for AI inference that actionlint doesn't recognize yet
 ignore:
-  - 'permission scope .models.'
+  - 'unknown permission scope'

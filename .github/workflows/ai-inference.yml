@@ -16,13 +16,4 @@ jobs:
     name: AI Inference
     runs-on: ubuntu-latest
     steps:
-      - name: Run AI Inference
-        id: ai
-        uses: actions/ai-inference@v1
-        with:
-          prompt: "Explain what GitHub Actions is in 2 sentences."
-          max-tokens: 150
-
-      - name: Display Response
-        run: echo "${{ steps.ai.outputs.response }}"
-        
+      # Add AI inference steps here
