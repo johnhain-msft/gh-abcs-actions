@@ -1,6 +1,8 @@
 name: 08-1. AI Inference
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:

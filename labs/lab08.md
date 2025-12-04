@@ -23,6 +23,8 @@ GitHub Actions requires explicit permission to access GitHub Models. The `models
 name: 08-1. AI Inference
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -36,7 +38,7 @@ jobs:
       # Add AI inference steps here
 ```
 
-> **Note:** The workflow already has the `models: read` permission configured and a `workflow_dispatch` trigger for manual execution. You'll add the AI inference steps.
+> **Note:** The workflow has the `models: read` permission configured, a `pull_request` trigger to run on PRs to main, and a `workflow_dispatch` trigger for manual execution. You'll add the AI inference steps.
 
 ### Add the AI Inference Step
 
@@ -57,16 +59,18 @@ jobs:
 > - `prompt`: The text prompt to send to the AI model
 > - `model`: The model to use (defaults to `openai/gpt-4o`)
 > - `max-tokens`: Maximum tokens in the response (controls response length)
+>
+> The AI response is available in `steps.ai.outputs.response` where `ai` is the `id` we assigned to the inference step.
 
-> **Note:** The AI response is available in `steps.ai.outputs.response` where `ai` is the `id` we assigned to the inference step.
+### Test the Workflow
 
-### Run the Workflow
-
-4. Commit the changes into the `main` branch
-5. Go to the `Actions` tab in your repository
-6. Select the `08-1. AI Inference` workflow from the left sidebar
-7. Click `Run workflow` → select the `main` branch → click `Run workflow`
-8. Once the workflow completes, click into the run and expand the `Display Response` step to see the AI-generated explanation of GitHub Actions
+4. Commit the changes into a new `feature/lab08` branch
+5. Open a new pull request from `Pull requests`
+> Make sure it is your repository pull request to not propose changes to the upstream repository. From the drop-down list choose the base repository to be yours.
+6. Once the PR is opened, go to `Actions` and see the details of your running workflow
+7. Click into the workflow run and expand the `Display Response` step to see the AI-generated explanation of GitHub Actions
+8. Once all checks have passed, click on the button `Merge pull request` to complete the PR
+9. Go to `Actions` and see the details of your running workflow
 
 ## 8.2 Final
 
@@ -79,6 +83,8 @@ jobs:
 name: 08-1. AI Inference
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
