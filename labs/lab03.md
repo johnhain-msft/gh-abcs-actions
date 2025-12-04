@@ -83,7 +83,147 @@ on:
     - [Reviewing deployments](https://docs.github.com/en/actions/managing-workflow-runs/reviewing-deployments)
 11. Go to `Settings` > `Environments` and update the `PROD` environment created to protect it with approvals (same as UAT)
 
-## 3.3 Final
+## 3.3 Programmatic Deployment Review (Advanced - Optional)
+
+> **Note:** This section is **optional** and more advanced. It requires setting up a GitHub App. Sections 3.1 and 3.2 can be completed independently.
+
+### What You'll Learn
+
+After completing this section, you will understand:
+- How to create and configure a GitHub App for workflow automation
+- Why GitHub Apps are needed for programmatic deployment approvals (vs. `GITHUB_TOKEN`)
+- How to generate installation tokens using `workflow-application-token-action`
+- How to call the GitHub REST API from within a workflow using `github-script`
+- The structure of the `reviewPendingDeploymentsForRun` API call
+
+### Purpose and Use Cases
+
+The [review-pending-deployments.yml](/.github/workflows/review-pending-deployments.yml) workflow demonstrates:
+- **Automated deployment gates**: Approve/reject deployments based on external conditions (test results, security scans, change windows)
+- **Integration with external systems**: Let CI/CD tools, ticketing systems, or chat bots control deployment approvals
+- **Bulk operations**: Approve multiple pending deployments without manual UI clicks
+
+### Prerequisites
+
+This workflow requires a **GitHub App** for authentication because the default `GITHUB_TOKEN` cannot approve deployments in the same repository (security restriction).
+
+#### Create a GitHub App
+
+1. Go to **Settings** > **Developer settings** > **GitHub Apps** > **New GitHub App**
+2. Configure the app:
+   - **Name**: `<your-org>-deployment-reviewer` (or similar)
+   - **Homepage URL**: Your repository URL
+   - **Webhook**: Uncheck "Active" (not needed)
+3. Set **Permissions**:
+   - **Repository permissions**:
+     - Actions: Read and write
+     - Contents: Read-only
+     - Deployments: Read and write
+4. Click **Create GitHub App**
+5. Note the **App ID** (displayed on the app settings page)
+6. Generate a **Private Key** (scroll down, click "Generate a private key")
+   - Save the downloaded `.pem` file securely
+
+#### Install the App and Configure Secrets
+
+1. On your GitHub App page, click **Install App** in the sidebar
+2. Choose your repository and click **Install**
+3. In your repository, go to **Settings** > **Secrets and variables** > **Actions**
+4. Create two secrets:
+   - `GH_ABCS_APP_ACTIONS_APP_ID`: Your App ID
+   - `GH_ABCS_APP_ACTIONS_APP_PRIVATE_KEY`: Contents of the `.pem` file
+
+### Review the Workflow
+
+1. Open the workflow file [review-pending-deployments.yml](/.github/workflows/review-pending-deployments.yml)
+2. Read through the file and identify the key sections described below.
+
+**Workflow Inputs (lines 4-24):** The workflow uses `workflow_dispatch` with manual inputs:
+- `run_id` - Which workflow run has pending deployments
+- `environment_ids` - Which environment(s) to approve/reject
+- `state` - Either `approved` or `rejected`
+- `comment` - Message to include with the review
+
+**Step 1 - Get Token (lines 37-43):** Generates a GitHub App token using [peter-murray/workflow-application-token-action](https://github.com/peter-murray/workflow-application-token-action):
+```yaml
+- name: Get Token
+  id: get_workflow_token
+  uses: peter-murray/workflow-application-token-action@v3
+  with:
+    application_id: ${{ secrets.GH_ABCS_APP_ACTIONS_APP_ID }}
+    application_private_key: "${{ secrets.GH_ABCS_APP_ACTIONS_APP_PRIVATE_KEY }}"
+    permissions: "actions:write,contents:read,deployments:read"
+```
+> **Why a GitHub App?** The default `GITHUB_TOKEN` cannot approve deployments in the same repository where the workflow runs. This is a security restriction. A GitHub App token has a separate identity and can approve deployments.
+
+**Step 2 - Review Deployments (lines 57-72):** Calls the GitHub API using [actions/github-script](https://github.com/actions/github-script):
+```yaml
+- name: Approve or Reject
+  uses: actions/github-script@v7
+  with:
+    github-token: ${{ steps.get_workflow_token.outputs.token }}
+    script: |
+      github.rest.actions.reviewPendingDeploymentsForRun({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        run_id: ${{ github.event.inputs.run_id }},
+        environment_ids: [${{ github.event.inputs.environment_ids }}],
+        state: '${{ github.event.inputs.state }}',
+        comment: '${{ github.event.inputs.comment }}'
+      })
+```
+> **Key insight:** The `github-script` action provides `github.rest.*` methods that map directly to the [GitHub REST API](https://docs.github.com/en/rest). The method `reviewPendingDeploymentsForRun` corresponds to the [Review pending deployments](https://docs.github.com/en/rest/actions/workflow-runs#review-pending-deployments-for-a-workflow-run) endpoint.
+
+### Try It Out
+
+Now that you understand how the workflow works, test it:
+
+1. **Modify the environments-secrets workflow for manual triggering:**
+   - Open [environments-secrets.yml](/.github/workflows/environments-secrets.yml)
+   - Find the `use-environment-uat` job (around line 80)
+   - Comment out the `if` condition so it runs on manual trigger:
+     ```yaml
+     use-environment-uat:
+       name: Use UAT environment
+       runs-on: ubuntu-latest
+       # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+       needs: use-environment-test
+     ```
+   - Commit your change
+
+2. **Create a pending deployment:**
+   - Go to **Actions** > **03-1. Environments and Secrets**
+   - Click **Run workflow** to trigger it manually
+   - Wait for it to pause at UAT (requires approval if you configured it in section 3.1)
+
+3. **Get the Run ID:**
+   - Click on the running workflow in the Actions tab
+   - Look at the URL: `https://github.com/owner/repo/actions/runs/123456789`
+   - The Run ID is `123456789`
+
+4. **Get the Environment ID:**
+   - Go to **Settings** > **Environments** > click the environment waiting for approval
+   - Look at the URL: `https://github.com/owner/repo/settings/environments/12345`
+   - The Environment ID is `12345`
+
+5. **Run the review workflow:**
+   - Go to **Actions** > **03-3. Review Pending Deployments**
+   - Click **Run workflow**
+   - Fill in the values you collected above
+   - Set **state** to `approved`
+   - Add a **comment** like "Approved via API"
+
+6. **Verify:**
+   - Go back to the `environments-secrets.yml` workflow run
+   - Confirm the pending deployment was approved and the workflow continued
+
+### References
+
+- [Review pending deployments API](https://docs.github.com/en/rest/actions/workflow-runs#review-pending-deployments-for-a-workflow-run)
+- [Creating a GitHub App](https://docs.github.com/en/apps/creating-github-apps)
+- [workflow-application-token-action](https://github.com/peter-murray/workflow-application-token-action)
+
+## 3.4 Final
 <details>
   <summary>environments-secrets.yml</summary>
   
