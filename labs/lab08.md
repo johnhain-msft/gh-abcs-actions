@@ -23,6 +23,9 @@ GitHub Actions requires explicit permission to access GitHub Models. The `models
 name: 08-1. AI Inference
 
 on:
+  push:
+    branches:
+      - 'feature/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -38,7 +41,7 @@ jobs:
       # Add AI inference steps here
 ```
 
-> **Note:** The workflow has the `models: read` permission configured, a `pull_request` trigger to run on PRs to main, and a `workflow_dispatch` trigger for manual execution. You'll add the AI inference steps.
+> **Note:** The workflow has the `models: read` permission configured, a `push` trigger for feature branches, a `pull_request` trigger to run on PRs to main, and a `workflow_dispatch` trigger for manual execution. You'll add the AI inference steps.
 
 ### Add the AI Inference Step
 
@@ -64,11 +67,11 @@ jobs:
 
 ### Test the Workflow
 
-4. Commit the changes into a new `feature/lab08` branch
-5. Open a new pull request from `Pull requests`
+4. Commit the changes into a new `feature/lab08` branch and push to the remote repository
+5. Go to `Actions` and see the details of your running workflow (the workflow triggers automatically on push to feature branches)
+6. Click into the workflow run and expand the `Display Response` step to see the AI-generated explanation of GitHub Actions
+7. Open a new pull request from `Pull requests`
 > Make sure it is your repository pull request to not propose changes to the upstream repository. From the drop-down list choose the base repository to be yours.
-6. Once the PR is opened, go to `Actions` and see the details of your running workflow
-7. Click into the workflow run and expand the `Display Response` step to see the AI-generated explanation of GitHub Actions
 8. Once all checks have passed, click on the button `Merge pull request` to complete the PR
 9. Go to `Actions` and see the details of your running workflow
 
@@ -83,6 +86,9 @@ jobs:
 name: 08-1. AI Inference
 
 on:
+  push:
+    branches:
+      - 'feature/**'
   pull_request:
     branches: [main]
   workflow_dispatch:
