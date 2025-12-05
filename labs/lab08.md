@@ -365,7 +365,6 @@ jobs:
           else
             echo "⚠️ Code needs improvement (score: $SCORE)"
           fi
-
 ```
 
 > **New Steps Explained:**
@@ -380,13 +379,13 @@ jobs:
 
 `jq` is a command-line JSON processor pre-installed on GitHub runners. Common patterns:
 
-| Command | Description |
-| ------- | ----------- |
-| `jq -r '.field'` | Extract field value as raw string (no quotes) |
-| `jq -r '.nested.field'` | Extract nested field |
-| `jq -r '.array[]'` | Iterate over array elements |
-| `jq -r '.array[0]'` | Get first array element |
-| `jq -r '.items[] \| .name'` | Extract field from each array element |
+| Command                     | Description                                   |
+| --------------------------- | --------------------------------------------- |
+| `jq -r '.field'`            | Extract field value as raw string (no quotes) |
+| `jq -r '.nested.field'`     | Extract nested field                          |
+| `jq -r '.array[]'`          | Iterate over array elements                   |
+| `jq -r '.array[0]'`         | Get first array element                       |
+| `jq -r '.items[] \| .name'` | Extract field from each array element         |
 
 The `-r` flag outputs raw strings without JSON quotes.
 
