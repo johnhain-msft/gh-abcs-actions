@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Placeholder
+        id: ai
         run: echo "Add AI inference steps"
 
       - name: Display Response
