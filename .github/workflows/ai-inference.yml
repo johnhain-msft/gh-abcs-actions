@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  models: read # actionlint-ignore: permissions
+  models: read
 
 jobs:
   inference:

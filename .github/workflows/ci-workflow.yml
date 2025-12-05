@@ -10,7 +10,7 @@ on:
 jobs:
   # The first job lints the code base
   lint:
-    uses: githubabcs/gh-abcs-actions/.github/workflows/super-linter.yml@main
+    uses: johnhain-msft/gh-abcs-actions/.github/workflows/super-linter.yml@main
 
   # CI job to run a test suite on the code base
   ci:
