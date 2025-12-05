@@ -227,7 +227,7 @@ JSON Schema defines the structure your AI response must follow. Key concepts:
 - **items**: Defines the structure of array elements
 - **additionalProperties**: When `false`, prevents extra fields
 
-### Update the Prompt File
+### Add JSON Schema to Prompt File
 
 1. Open [code-review.prompt.yml](/.github/prompts/code-review.prompt.yml)
 2. Replace the contents with the following to add JSON Schema support:
@@ -297,7 +297,7 @@ jsonSchema: |
 > - `jsonSchema` - Defines the exact structure with a `name`, `strict: true` for validation, and the `schema` object
 > - The schema requires four fields: `summary` (string), `issues` (array), `score` (integer), and `suggestion` (string)
 
-### Update the Workflow
+### Add Parsing Steps to Workflow
 
 3. Open [ai-inference.yml](/.github/workflows/ai-inference.yml) and replace the entire contents with:
 
@@ -381,12 +381,12 @@ jobs:
 `jq` is a command-line JSON processor pre-installed on GitHub runners. Common patterns:
 
 | Command | Description |
-|---------|-------------|
+| ------- | ----------- |
 | `jq -r '.field'` | Extract field value as raw string (no quotes) |
 | `jq -r '.nested.field'` | Extract nested field |
 | `jq -r '.array[]'` | Iterate over array elements |
 | `jq -r '.array[0]'` | Get first array element |
-| `jq -r '.items[] \| .name'` | Extract field from each array item |
+| `jq -r '.items[] \| .name'` | Extract field from each array element |
 
 The `-r` flag outputs raw strings without JSON quotes.
 
