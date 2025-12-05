@@ -1,0 +1,6 @@
+# Lab files - preserve formatting for copy/paste code blocks
+labs/
+
+# Workflow and action files - these are training content, don't auto-format
+.github/workflows/
+.github/actions/

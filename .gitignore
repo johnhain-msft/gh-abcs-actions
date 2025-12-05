@@ -4,3 +4,4 @@ node_modules/*
 .bmad-infrastructure-devops/*
 web-bundles/*
 docs/*
+CLAUDE.md
