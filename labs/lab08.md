@@ -505,6 +505,7 @@ Add the MCP demo job to your workflow. Open [ai-inference.yml](/.github/workflow
         with:
           prompt: |
             You have access to this repository's context via MCP.
+            The repository is: ${{ github.repository }}
             Please list the open issues in this repository, including their
             numbers and titles. If there are no open issues, say so.
           max-tokens: 500
@@ -707,6 +708,7 @@ jobs:
         with:
           prompt: |
             You have access to this repository's context via MCP.
+            The repository is: ${{ github.repository }}
             Please list the open issues in this repository, including their
             numbers and titles. If there are no open issues, say so.
           max-tokens: 500
