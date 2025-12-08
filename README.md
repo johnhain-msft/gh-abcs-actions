@@ -45,6 +45,10 @@
 - Repo: [github-actions-for-ci](https://github.com/CalinL/github-actions-for-ci)
 - [ ] _Hands-on Lab:_ :point_right: [Activity 7](/labs/lab07.md)
 
+### Module 8: AI Inference
+- Example: [ai-inference.yml](/.github/workflows/ai-inference.yml)
+- [ ] _Hands-on Lab:_ :point_right: [Activity 8](/labs/lab08.md)
+
 ---
 
 ## Learning Path
