@@ -29,9 +29,9 @@
 - Example: [github-script.yml](/.github/workflows/github-script.yml)
 - Example: [hello-world-composite.yml](/.github/workflows/hello-world-composite.yml)
 - Example: [use-custom-actions.yml](/.github/workflows/use-custom-actions.yml)
-- Repo: [githubabcs/hello-world-composite-action](https://github.com/githubabcs/hello-world-composite-action)
-- Repo: [write-docker-actions](https://github.com/CalinL/write-docker-actions)
-- Repo: [write-javascript-actions](https://github.com/CalinL/writing-javascript-actions)
+- Repository: [githubabcs/hello-world-composite-action](https://github.com/githubabcs/hello-world-composite-action)
+- Repository: [write-docker-actions](https://github.com/CalinL/write-docker-actions)
+- Repository: [write-javascript-actions](https://github.com/CalinL/writing-javascript-actions)
 - [ ] _Hands-on Lab:_ :point_right: [Activity 5](/labs/lab05.md)
 
 ### Module 6: Self-hosted runners
@@ -41,8 +41,8 @@
 ### Module 7: CI/CD
 - Example: [ci-workflow.yml](/.github/workflows/ci-workflow.yml)
 - Example: [cd-workflow.yml](/.github/workflows/cd-workflow.yml)
-- Repo: [github-actions-for-packages](https://github.com/CalinL/github-actions-for-packages)
-- Repo: [github-actions-for-ci](https://github.com/CalinL/github-actions-for-ci)
+- Repository: [github-actions-for-packages](https://github.com/CalinL/github-actions-for-packages)
+- Repository: [github-actions-for-ci](https://github.com/CalinL/github-actions-for-ci)
 - [ ] _Hands-on Lab:_ :point_right: [Activity 7](/labs/lab07.md)
 
 ### Module 8: AI Inference

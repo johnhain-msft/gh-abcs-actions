@@ -487,7 +487,7 @@ The MCP demo job is controlled by a repository variable:
    - **Value:** `true`
 5. Click **Add variable**
 
-### Update the Workflow
+### Add the MCP Demo Job
 
 Add the MCP demo job to your workflow. Open [ai-inference.yml](/.github/workflows/ai-inference.yml) and add the following job after the `inference` job (at the same indentation level as `inference:`):
 
@@ -542,13 +542,13 @@ If the AI returns your exact issue title and number, MCP is working correctly!
 ### Troubleshooting
 
 | Problem | Cause | Solution |
-|---------|-------|----------|
+| ------- | ----- | -------- |
 | Job skipped | `ENABLE_MCP_DEMO` variable not set | Add the variable with value `true` |
 | Job skipped | Variable value incorrect | Ensure value is exactly `true` (lowercase) |
 | "MCP authentication failed" | Token missing or invalid | Verify `GH_MCP_TOKEN` secret exists and token hasn't expired |
 | Empty/generic response | Token lacks permissions | Verify PAT has Issues Read-only permission |
 | Wrong issue data | AI hallucination | Verify the distinctive title appears exactly as created |
-| "Resource not accessible" | Token scoped to wrong repo | Regenerate PAT with correct repository selected |
+| "Resource not accessible" | Token scoped to wrong repository | Regenerate PAT with correct repository selected |
 
 ### Cleanup (After Lab)
 
