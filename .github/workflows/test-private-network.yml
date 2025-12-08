@@ -1,0 +1,15 @@
+  name: Test Private Network Runner
+
+  on:
+    workflow_dispatch:
+
+  jobs:
+    build:
+      runs-on:
+        group: jhhain-vnet-runners
+        labels: [ubuntu-latest-4cores]
+      steps:
+        - uses: actions/checkout@v4
+        - name: Access private resource
+          run: |
+            echo "Connected to private network!"
