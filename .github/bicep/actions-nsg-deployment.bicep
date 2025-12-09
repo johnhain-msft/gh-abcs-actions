@@ -196,6 +196,58 @@ resource actions_NSG 'Microsoft.Network/networkSecurityGroups@2017-06-01' = {
           destinationAddressPrefixes: []
         }
       }
+      {
+        name: 'AllowOutBoundGHECloud'
+        properties: {
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: '*'
+          access: 'Allow'
+          priority: 240
+          direction: 'Outbound'
+          // GHE.com ingress ranges - required for GitHub Enterprise Cloud
+          // See: https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency/network-details-for-ghecom
+          destinationAddressPrefixes: [
+            // US Region - Ingress
+            '74.249.180.192/28'
+            '48.214.149.96/28'
+            '172.202.123.176/28'
+            // US Region - Egress
+            '20.221.76.128/28'
+            '135.233.115.208/28'
+            '20.118.27.192/28'
+            // EU Region - Ingress
+            '108.143.197.176/28'
+            '20.123.213.96/28'
+            '20.224.46.144/28'
+            '20.240.194.240/28'
+            '20.240.220.192/28'
+            '20.240.211.208/28'
+            // EU Region - Egress
+            '108.143.221.96/28'
+            '20.61.46.32/28'
+            '20.224.62.160/28'
+            '51.12.252.16/28'
+            '74.241.131.48/28'
+            '20.240.211.176/28'
+            // Australia Region - Ingress
+            '4.237.73.192/28'
+            '20.5.226.112/28'
+            '20.248.163.176/28'
+            // Australia Region - Egress
+            '20.5.34.240/28'
+            '20.5.146.128/28'
+            '68.218.155.16/28'
+            // GHE.com Actions IPs - EU
+            '74.241.192.231/32'
+            '74.241.204.117/32'
+            // GHE.com Actions IPs - Australia
+            '4.147.140.77/32'
+            '20.53.114.78/32'
+          ]
+        }
+      }
     ]
   }
 }
