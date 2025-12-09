@@ -14,14 +14,14 @@
 set -e
 
 #set environment
-export AZURE_LOCATION=westus2
-export SUBSCRIPTION_ID=863ad466-5b36-4178-8052-9ed75db2256a
-export RESOURCE_GROUP_NAME=github-vm-test-jh-3-rg
-export VNET_NAME=MyGithubRunnersVNET
-export SUBNET_NAME=jh-github-runners
-export NSG_NAME=MyGithubRunnersVNET-github-runners-nsg-westus2
-export NETWORK_SETTINGS_RESOURCE_NAME=jh-3-network-settings
-export DATABASE_ID=154262171
+export AZURE_LOCATION=YOUR_AZURE_LOCATION
+export SUBSCRIPTION_ID=YOUR_SUBSCRIPTION_ID
+export RESOURCE_GROUP_NAME=YOUR_RESOURCE_GROUP_NAME
+export VNET_NAME=YOUR_VNET_NAME
+export SUBNET_NAME=YOUR_SUBNET_NAME
+export NSG_NAME=YOUR_NSG_NAME
+export NETWORK_SETTINGS_RESOURCE_NAME=YOUR_NETWORK_SETTINGS_RESOURCE_NAME
+export DATABASE_ID=YOUR_DATABASE_ID
 export API_VERSION=2024-04-02
 
 # These are the default values. You can adjust your address and subnet prefixes.
