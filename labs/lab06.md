@@ -260,3 +260,227 @@ az group delete --resource-group YOUR_RESOURCE_GROUP_NAME
 1. Delete the runner from the runner group
 2. Delete the runner group
 3. Delete the network configuration
+
+## (Optional) 6.3 AKS Runners with Actions Runner Controller
+
+This section covers deploying GitHub Actions self-hosted runners to Azure Kubernetes Service (AKS) using Actions Runner Controller (ARC), enabling autoscaling containerized runners.
+
+### What ARC Provides
+
+- **Kubernetes operator**: Orchestrates self-hosted runner lifecycle on any Kubernetes cluster
+- **Runner scale sets**: Groups of runners that autoscale based on workflow demand (0 to N)
+- **Containerized runners**: Ephemeral, reproducible build environments with customizable images
+- **Scale-to-zero**: Runners spin down when idle, reducing costs
+
+### Why ARC Matters
+
+| Approach | Management | Scaling | Cost When Idle |
+|----------|------------|---------|----------------|
+| Self-hosted VMs (6.1) | Manual | None (static) | Full cost |
+| GitHub-hosted + VNET (6.2) | GitHub-managed | GitHub-managed | Per-minute |
+| ARC on Kubernetes (6.3) | Self-managed (K8s) | Autoscaling (0-N) | Near-zero |
+
+ARC is ideal when you need:
+- **Dynamic scaling** based on workflow demand without maintaining idle VMs
+- **Kubernetes-native orchestration** integrated with existing K8s infrastructure
+- **Consistent, reproducible environments** via container images
+- **Cost optimization** at enterprise scale
+
+> **Prerequisites:**
+>
+> - Azure subscription
+> - Azure CLI installed and authenticated
+> - Helm 3.x installed ([Installing Helm](https://helm.sh/docs/intro/install/))
+> - kubectl installed ([Install kubectl](https://kubernetes.io/docs/tasks/tools/))
+> - GitHub organization (for runner registration)
+> - Organization owner permissions (to create GitHub App)
+
+### Configuration Steps
+
+**References:**
+
+- [Quickstart for Actions Runner Controller](https://docs.github.com/en/actions/tutorials/use-actions-runner-controller/quickstart)
+- [About Actions Runner Controller](https://docs.github.com/en/actions/concepts/runners/actions-runner-controller)
+- [ARC GitHub Repository](https://github.com/actions/actions-runner-controller)
+- [Azure AKS Overview](https://learn.microsoft.com/en-us/azure/aks/)
+- [AKS Quickstart (Portal)](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-portal)
+- [Deploy GitHub Actions on AKS](https://learn.microsoft.com/en-us/azure/aks/github-actions-azure-files-overview)
+
+#### Step 1: Create an AKS cluster
+
+Follow the Azure documentation to create an AKS cluster:
+
+- [Deploy AKS cluster using Azure Portal](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-portal)
+- [Deploy AKS cluster using Azure CLI](https://learn.microsoft.com/en-us/azure/aks/learn/quick-kubernetes-deploy-cli)
+
+For testing, a "Dev/Test" preset configuration is sufficient. After creation, configure kubectl:
+
+```bash
+az aks get-credentials --resource-group <RESOURCE_GROUP> --name <CLUSTER_NAME>
+```
+
+Verify connectivity:
+
+```bash
+kubectl get nodes
+```
+
+#### Step 2: Install the ARC controller
+
+The ARC controller manages runner lifecycle. Install it via Helm:
+
+```bash
+NAMESPACE="arc-systems"
+helm install arc \
+  --namespace "${NAMESPACE}" \
+  --create-namespace \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+```
+
+Verify the controller is running:
+
+```bash
+kubectl get pods -n arc-systems
+```
+
+#### Step 3: Create a GitHub App for ARC authentication
+
+GitHub Apps are the recommended authentication method for ARC. They provide better security, fine-grained permissions, and higher rate limits than PATs.
+
+1. Navigate to your organization: **GitHub** → **Your Organization** → **Settings**
+2. Go to **Developer settings** → **GitHub Apps** → **New GitHub App**
+3. Configure the app:
+   - **GitHub App name**: `arc-runner-controller` (must be unique across GitHub)
+   - **Homepage URL**: `https://github.com/actions/actions-runner-controller`
+   - **Webhook**: Uncheck "Active" (ARC doesn't use webhooks for authentication)
+4. Set **Organization Permissions**:
+   - **Self-hosted runners**: Read and write
+5. Set **Repository Permissions** (if registering repo-level runners):
+   - **Administration**: Read and write
+   - **Metadata**: Read-only
+6. Click **Create GitHub App**
+7. Note the **App ID** displayed on the app's settings page
+8. Generate a private key:
+   - Scroll to **Private keys** → **Generate a private key**
+   - Save the downloaded `.pem` file securely
+9. Install the app:
+   - Go to **Install App** in the left sidebar
+   - Select your organization
+   - Choose **All repositories** or select specific repositories
+   - Click **Install**
+
+> **Reference:** [Authenticating ARC with a GitHub App](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/authenticating-to-the-github-api#authenticating-arc-with-a-github-app)
+
+#### Step 4: Create Kubernetes secret and deploy runner scale set
+
+First, create a Kubernetes secret with your GitHub App credentials:
+
+```bash
+NAMESPACE="arc-runners"
+kubectl create namespace "${NAMESPACE}"
+
+kubectl create secret generic arc-github-app-secret \
+  --namespace="${NAMESPACE}" \
+  --from-literal=github_app_id=<APP_ID> \
+  --from-literal=github_app_installation_id=<INSTALLATION_ID> \
+  --from-file=github_app_private_key=<PATH_TO_PEM_FILE>
+```
+
+To find your **Installation ID**: Go to your organization **Settings** → **GitHub Apps** → **Installed GitHub Apps** → click **Configure** on your app. The Installation ID is in the URL: `https://github.com/organizations/<org>/settings/installations/<INSTALLATION_ID>`
+
+Now deploy the runner scale set:
+
+```bash
+INSTALLATION_NAME="arc-runner-set"
+GITHUB_CONFIG_URL="https://github.com/<your-org>"
+
+helm install "${INSTALLATION_NAME}" \
+  --namespace "${NAMESPACE}" \
+  --set githubConfigUrl="${GITHUB_CONFIG_URL}" \
+  --set githubConfigSecret=arc-github-app-secret \
+  oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+```
+
+> **Important:** The `INSTALLATION_NAME` becomes the label you use in `runs-on`. Choose a descriptive name like `arc-runner-set` or `my-arc-runners`.
+
+Verify the runner scale set:
+
+```bash
+kubectl get pods -n arc-runners
+```
+
+Initially you'll see a listener pod. Runner pods spin up when workflows request them.
+
+#### Step 5: Create a workflow to test ARC runners
+
+Create a workflow file `.github/workflows/arc-runner-test.yml` in your repository:
+
+```yaml
+name: 06-3. ARC Runner Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message to display'
+        required: false
+        default: 'Hello from ARC!'
+
+jobs:
+  test-arc-runner:
+    name: Test ARC Runner
+    runs-on: arc-runner-set  # Must match your INSTALLATION_NAME
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify ARC runner
+        run: |
+          echo "${{ github.event.inputs.message }}"
+          echo "Running on ARC in Kubernetes!"
+          echo "Node: $(hostname)"
+```
+
+Update `runs-on: arc-runner-set` to match your `INSTALLATION_NAME` from Step 4.
+
+#### Step 6: Run and verify the workflow
+
+1. Navigate to **Actions** → **06-3. ARC Runner Test**
+2. Click **Run workflow**
+3. Watch the runner pod spin up in Kubernetes:
+   ```bash
+   kubectl get pods -n arc-runners -w
+   ```
+4. Verify the workflow completes successfully
+5. Observe the runner pod terminate after job completion (ephemeral behavior)
+
+> **ARC 0.12.0 (June 2025):** This release added Azure Key Vault integration for secrets management, Red Hat OpenShift support (preview), and improved Docker-in-Docker container mode. See [ARC 0.12.0 Release Notes](https://github.blog/changelog/2025-06-13-actions-runner-controller-0-12-0-release/).
+
+#### Step 7: Clean up resources
+
+When finished, clean up your resources:
+
+**Kubernetes (ARC):**
+
+```bash
+# Remove runner scale set
+helm uninstall arc-runner-set -n arc-runners
+
+# Remove ARC controller
+helm uninstall arc -n arc-systems
+
+# Remove namespaces
+kubectl delete namespace arc-runners
+kubectl delete namespace arc-systems
+```
+
+**Azure (AKS cluster):**
+
+```bash
+az aks delete --resource-group <RESOURCE_GROUP> --name <CLUSTER_NAME> --yes
+# Or delete the entire resource group:
+az group delete --resource-group <RESOURCE_GROUP> --yes
+```
+
+**GitHub:**
+
+1. Uninstall the GitHub App from your organization: **Settings** → **GitHub Apps** → **Installed GitHub Apps** → **Configure** → **Uninstall**
+2. Delete the GitHub App: **Settings** → **Developer settings** → **GitHub Apps** → select app → **Delete GitHub App**
