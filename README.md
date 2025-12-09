@@ -106,6 +106,15 @@
 - [GitHub Self-Hosted Runner Autoscaling with Kubernetes](https://tgrall.github.io/blog/2022/10/16/github-self-hosted-runner-autoscaling-with-kubernetes)
 - [GitHub Actions: Dive into actions-runner-controller (ARC)](https://www.youtube.com/watch?v=_F5ocPrv6io)
 
+### Optional Workflows
+
+The `optional-workflows/` directory contains workflow templates that require additional configuration before use:
+
+- **[codeql-analysis.txt](/optional-workflows/codeql-analysis.txt)** - Advanced CodeQL security scanning configuration
+  - To use: Rename to `.yml` and move to `.github/workflows/`
+  - **Important:** You must first disable GitHub's default CodeQL setup in repository Settings -> Security -> Code scanning
+  - GitHub does not allow both default setup and advanced configuration simultaneously
+
 ### Actions Changelog
 
 - [Changelog](https://github.blog/changelog/label/actions/)
