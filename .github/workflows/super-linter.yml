@@ -58,7 +58,7 @@ jobs:
           # Disable linters added in v8 that fail on pre-existing code
           # todo: Address these in a future story
           BASH_SEVERITY: error
-          BASH_FILE_NAME: "./linters/.shellcheckrc"
+          BASH_FILE_NAME: "linters/.shellcheckrc"
           DISABLE_ERRORS: true
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
