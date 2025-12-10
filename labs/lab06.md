@@ -142,7 +142,7 @@ Save the `databaseId` value from the output—you'll need it for the deployment 
 
 #### Step 2: Configure and run the Azure deployment script
 
-The deployment script and Bicep template are located in `.github/bicep/`. The script automates:
+The deployment script and Bicep template are located in `bicep/`. The script automates:
 
 - Resource group creation
 - Network Security Group (NSG) with required GitHub IP ranges
@@ -150,7 +150,7 @@ The deployment script and Bicep template are located in `.github/bicep/`. The sc
 - Subnet delegation to `GitHub.Network/networkSettings`
 - Network settings resource creation
 
-Edit `.github/bicep/deployment_script.sh` and configure these variables:
+Edit `bicep/deployment_script.sh` and configure these variables:
 
 | Variable | Description | Example |
 | -------- | ----------- | ------- |
@@ -168,7 +168,7 @@ Edit `.github/bicep/deployment_script.sh` and configure these variables:
 Run the script:
 
 ```bash
-cd .github/bicep
+cd bicep
 chmod +x deployment_script.sh
 ./deployment_script.sh
 ```
