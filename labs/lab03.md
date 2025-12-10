@@ -94,7 +94,7 @@ on:
 
 A common CI/CD challenge: your workflow builds a Docker image and needs to update a deployment manifest with the new image tag, then commit that change back to `main`. But with branch protection enabled, the push fails:
 
-```
+```text
 remote: error: GH006: Protected branch update failed for refs/heads/main.
 remote: error: Changes must be made through a pull request.
 ```
@@ -107,10 +107,10 @@ The `github-actions[bot]` user is not authorized to push directly to protected b
 
 ### The Solution: GitHub App + Repository Rulesets
 
-Instead of using a Personal Access Token (PAT)—which is tied to a specific user and is an anti-pattern for production—create a dedicated **GitHub App** for CI/CD automation:
+Instead of using a Personal Access Token (PAT)—which is tied to a specific user and is an antipattern for production—create a dedicated **GitHub App** for CI/CD automation:
 
-| Aspect | PAT (Anti-pattern) | GitHub App (Recommended) |
-|--------|-------------------|--------------------------|
+| Aspect | PAT (Antipattern)  | GitHub App (Recommended) |
+| ------ | ------------------ | ------------------------ |
 | Identity | Tied to user account | Independent entity |
 | Permissions | Often overly broad | Scoped to specific needs |
 | Audit trail | Shows as user | Shows as App |
@@ -127,9 +127,9 @@ Repository Rulesets (the modern replacement for branch protection rules) properl
    - [Creating GitHub Apps documentation](https://docs.github.com/en/apps/creating-github-apps)
    - Set these **Repository permissions**:
 
-   | Permission | Access Level |
-   |------------|--------------|
-   | Contents | Read & Write |
+   | Permission | Access Level   |
+   | ---------- | -------------- |
+   | Contents   | Read & Write   |
 
    - Generate and download a **private key** (you'll need this)
    - Note the **App ID** from the app's settings page
@@ -196,7 +196,7 @@ jobs:
           git push
 ```
 
-   - [actions/create-github-app-token documentation](https://github.com/actions/create-github-app-token)
+- [actions/create-github-app-token documentation](https://github.com/actions/create-github-app-token)
 
 7. **Commit the changes** into the `main` branch
 

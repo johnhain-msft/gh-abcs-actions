@@ -6,6 +6,9 @@ on:
 # Placeholder: Complete Lab 3.3 to configure this workflow with your GitHub App
 # This workflow demonstrates pushing to a protected branch using a GitHub App
 
+permissions:
+  contents: write
+
 jobs:
   update-manifest:
     name: Update Manifest (GitHub App)
