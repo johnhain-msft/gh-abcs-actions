@@ -46,6 +46,15 @@ jobs:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
 
+          
+      ##########################
+      #  Prepare Shellcheckrc  #
+      ##########################
+      - name: Prepare Super-Linter shellcheckrc
+        run: |
+          mkdir -p .automation/linters
+          cp linters/.shellcheckrc .automation/linters/.shellcheckrc
+
       ################################
       # Run Linter against code base #
       ################################
