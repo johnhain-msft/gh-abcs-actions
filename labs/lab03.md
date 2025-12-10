@@ -83,7 +83,135 @@ on:
     - [Reviewing deployments](https://docs.github.com/en/actions/managing-workflow-runs/reviewing-deployments)
 11. Go to `Settings` > `Environments` and update the `PROD` environment created to protect it with approvals (same as UAT)
 
-## 3.3 Final
+## (Advanced) 3.3 GitHub App + Rulesets for CI/CD Automation
+
+> Prerequisites:
+> - GitHub account with **admin access** to a repository
+> - A repository where you can configure branch protection (or create a new test repo)
+> - An existing workflow that needs to commit and push changes (or willingness to create one)
+
+### The Problem
+
+A common CI/CD challenge: your workflow builds a Docker image and needs to update a deployment manifest with the new image tag, then commit that change back to `main`. But with branch protection enabled, the push fails:
+
+```
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: error: Changes must be made through a pull request.
+```
+
+The `github-actions[bot]` user is not authorized to push directly to protected branches. This blocks GitOps patterns like:
+- Updating deployment manifests with new image tags
+- Auto-incrementing version numbers
+- Generating changelogs
+- Synchronizing configuration files
+
+### The Solution: GitHub App + Repository Rulesets
+
+Instead of using a Personal Access Token (PAT)—which is tied to a specific user and is an anti-pattern for production—create a dedicated **GitHub App** for CI/CD automation:
+
+| Aspect | PAT (Anti-pattern) | GitHub App (Recommended) |
+|--------|-------------------|--------------------------|
+| Identity | Tied to user account | Independent entity |
+| Permissions | Often overly broad | Scoped to specific needs |
+| Audit trail | Shows as user | Shows as App |
+| What if user leaves? | Token becomes invalid | App continues working |
+
+**Why Rulesets instead of legacy Branch Protection?**
+
+Repository Rulesets (the modern replacement for branch protection rules) properly support GitHub App bypass. Legacy branch protection does not reliably support this pattern.
+
+### Steps
+
+1. **Create a GitHub App** with minimal permissions
+   - Go to your GitHub Settings → Developer settings → GitHub Apps → New GitHub App
+   - [Creating GitHub Apps documentation](https://docs.github.com/en/apps/creating-github-apps)
+   - Set these **Repository permissions**:
+
+   | Permission | Access Level |
+   |------------|--------------|
+   | Contents | Read & Write |
+
+   - Generate and download a **private key** (you'll need this)
+   - Note the **App ID** from the app's settings page
+
+2. **Install the App on your repository**
+   - From your App's settings, click "Install App"
+   - Select the repository where you need CI/CD automation
+   - [Installing GitHub Apps documentation](https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app)
+
+3. **Create a Repository Ruleset** requiring PRs for main
+   - Go to your repository → Settings → Rules → Rulesets → New ruleset → New branch ruleset
+   - [Creating rulesets documentation](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository)
+   - Target the `main` branch (or `default` branch)
+   - Enable "Require a pull request before merging"
+
+4. **Add your GitHub App to the Bypass list**
+   - In the same ruleset, find "Bypass list"
+   - Add your GitHub App
+   - Set bypass type to **"Exempt"** (silently skips enforcement—ideal for automation)
+   - [About rulesets and bypass](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
+
+   > **Note:** "Exempt" bypass (available since September 2025) silently skips enforcement. Standard "Bypass" generates audit signals and is better for "break glass" scenarios.
+
+5. **Store App credentials as repository secrets**
+   - Go to Settings → Secrets and variables → Actions
+   - Create a **variable** `CI_BOT_APP_ID` with your App ID
+   - Create a **secret** `CI_BOT_PRIVATE_KEY` with your private key contents
+
+6. **Update the workflow** to use the App token
+   - Open the workflow file [github-app-manifest-update.yml](/.github/workflows/github-app-manifest-update.yml)
+   - Replace the entire contents with:
+
+```yaml
+name: 03-2. GitHub App Manifest Update
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-manifest:
+    name: Update Manifest (GitHub App)
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Generate GitHub App token
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.CI_BOT_APP_ID }}
+          private-key: ${{ secrets.CI_BOT_PRIVATE_KEY }}
+
+      # 2. Checkout with App token (enables push as App identity)
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      # 3. Make changes and push
+      - name: Update manifest and push
+        run: |
+          echo "image: myapp:${{ github.sha }}" > manifest.yaml
+          git config user.name "ci-bot[bot]"
+          git config user.email "ci-bot[bot]@users.noreply.github.com"
+          git add manifest.yaml
+          git commit -m "Update manifest to ${{ github.sha }}"
+          git push
+```
+
+   - [actions/create-github-app-token documentation](https://github.com/actions/create-github-app-token)
+
+7. **Commit the changes** into the `main` branch
+
+8. **Test the workflow**
+   - Go to `Actions` and select "03-2. GitHub App Manifest Update"
+   - Click "Run workflow" → "Run workflow"
+   - Verify the commit appears on `main` with your App as the author
+   - The push succeeds because your App is in the ruleset's bypass list
+
+9. **Cleanup**
+   - Settings → GitHub Apps → Uninstall the app from the repository
+   - Settings → Rules → Rulesets → Delete the ruleset
+   - Settings → Secrets → Delete `CI_BOT_PRIVATE_KEY` and `CI_BOT_APP_ID`
+
+## 3.4 Final
 <details>
   <summary>environments-secrets.yml</summary>
   
@@ -210,5 +338,43 @@ jobs:
 
       - name: Step that uses the PROD environment
         run: echo "Deployment to ${{ env.PROD_URL }}..."
+```
+</details>
+
+<details>
+  <summary>github-app-manifest-update.yml</summary>
+
+```yaml
+name: 03-2. GitHub App Manifest Update
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-manifest:
+    name: Update Manifest (GitHub App)
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Generate GitHub App token
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.CI_BOT_APP_ID }}
+          private-key: ${{ secrets.CI_BOT_PRIVATE_KEY }}
+
+      # 2. Checkout with App token (enables push as App identity)
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      # 3. Make changes and push
+      - name: Update manifest and push
+        run: |
+          echo "image: myapp:${{ github.sha }}" > manifest.yaml
+          git config user.name "ci-bot[bot]"
+          git config user.email "ci-bot[bot]@users.noreply.github.com"
+          git add manifest.yaml
+          git commit -m "Update manifest to ${{ github.sha }}"
+          git push
 ```
 </details>
