@@ -112,6 +112,10 @@ This section covers configuring GitHub-hosted runners with Azure VNET integratio
 
 ### Configuration Steps
 
+```*Note* It is recommended to put runners in a VNET that has central access to one or more deployment resources to allow connectivity and maintain network security boundaries```
+
+![Network_Image](./images/runner-networking.png)
+
 Setting up private networking involves Azure infrastructure deployment, GitHub configuration, and workflow setup.
 
 **References:**
