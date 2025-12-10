@@ -47,13 +47,13 @@ jobs:
           fetch-depth: 0
 
           
-      ##########################
-      #  Prepare Shellcheckrc  #
-      ##########################
-      - name: Prepare Super-Linter shellcheckrc
-        run: |
-          mkdir -p .automation/linters
-          cp linters/.shellcheckrc .automation/linters/.shellcheckrc
+      # ##########################
+      # #  Prepare Shellcheckrc  #
+      # ##########################
+      # - name: Prepare Super-Linter shellcheckrc
+      #   run: |
+      #     mkdir -p .automation/linters
+      #     cp linters/.shellcheckrc .automation/linters/.shellcheckrc
 
       ################################
       # Run Linter against code base #
@@ -66,9 +66,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Disable linters added in v8 that fail on pre-existing code
           # todo: Address these in a future story
-          BASH_SEVERITY: error
-          BASH_FILE_NAME: "linters/.shellcheckrc"
+          # disabled bash for now due to errors with superlinter version 8 and passing a spellcheck file
+          #BASH_SEVERITY: error
+          #BASH_FILE_NAME: "linters/.shellcheckrc"
           DISABLE_ERRORS: true
+          VALIDATE_BASH: false
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
           VALIDATE_TRIVY: false
