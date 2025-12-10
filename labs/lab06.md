@@ -112,6 +112,10 @@ This section covers configuring GitHub-hosted runners with Azure VNET integratio
 
 ### Configuration Steps
 
+```*Note* It is recommended to put runners in a VNET that has central access to one or more deployment resources to allow connectivity and maintain network security boundaries```
+
+![Network_Image](./images/runner-networking.png)
+
 Setting up private networking involves Azure infrastructure deployment, GitHub configuration, and workflow setup.
 
 **References:**
@@ -138,7 +142,7 @@ Save the `databaseId` value from the output—you'll need it for the deployment 
 
 #### Step 2: Configure and run the Azure deployment script
 
-The deployment script and Bicep template are located in `.github/bicep/`. The script automates:
+The deployment script and Bicep template are located in `bicep/`. The script automates:
 
 - Resource group creation
 - Network Security Group (NSG) with required GitHub IP ranges
@@ -146,10 +150,10 @@ The deployment script and Bicep template are located in `.github/bicep/`. The sc
 - Subnet delegation to `GitHub.Network/networkSettings`
 - Network settings resource creation
 
-Edit `.github/bicep/deployment_script.sh` and configure these variables:
+Edit `bicep/deployment_script.sh` and configure these variables:
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+| -------- | ----------- | ------- |
 | `AZURE_LOCATION` | Azure region for resources | `westus2` |
 | `SUBSCRIPTION_ID` | Your Azure subscription ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `RESOURCE_GROUP_NAME` | Name for new resource group | `github-runners-rg` |
@@ -164,7 +168,7 @@ Edit `.github/bicep/deployment_script.sh` and configure these variables:
 Run the script:
 
 ```bash
-cd .github/bicep
+cd bicep
 chmod +x deployment_script.sh
 ./deployment_script.sh
 ```
@@ -198,7 +202,7 @@ Save the `GitHubId` from the output—you'll need it for the GitHub configuratio
 4. Click **Create runner**
 
 > **Important:** The runner **Name** you enter becomes the label used in your workflow's `runs-on.labels` field. For example, if you name your runner `ubuntu-vnet-4core`, you reference it as `labels: [ubuntu-vnet-4core]`.
-
+>
 > **Note:** Private networking requires larger GitHub-hosted runners. Standard runners are not supported.
 
 #### Step 6: Create a workflow to test the private network runner

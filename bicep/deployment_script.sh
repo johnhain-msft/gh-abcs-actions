@@ -63,3 +63,4 @@ echo Create network settings resource $NETWORK_SETTINGS_RESOURCE_NAME
 echo
 echo To clean up and delete resources run the following command:
 echo az group delete --resource-group $RESOURCE_GROUP_NAME
+
