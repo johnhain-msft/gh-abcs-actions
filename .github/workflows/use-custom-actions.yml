@@ -55,3 +55,9 @@ jobs:
           repoToken: ${{secrets.GITHUB_TOKEN}}
           catFact: ${{steps.cat.outputs.fact}}
           issueTitle: "A cat fact for you from ${{ github.repository_owner }}"
+
+      - name: Hello world action step
+        id: hello
+        uses: ./.github/actions/hello-world-javascript-action@v1.1
+        with:
+            who-to-greet: 'Mona the Octocat'
