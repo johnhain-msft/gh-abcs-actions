@@ -13,9 +13,7 @@ on:
 jobs:
   test-private-network:
     name: Test Private Network Connectivity
-    runs-on:
-      group: jhhain-vnet-runners-2
-      labels: [jhhain-vnet-runner-3]
+    runs-on: jhhain-vnet-runner-3
     steps:
       - uses: actions/checkout@v4
       - name: Verify private network connectivity
